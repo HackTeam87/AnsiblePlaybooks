@@ -1,30 +1,26 @@
+
 ---
-- name: cisco Nexus3000 C3064PQ
-  hosts: all
+- name: Run start backup script
+  hosts: cisco
   gather_facts: false
-  connection: network_cli
-
+  connection: local
   vars:
-    backup_dir: "/var/lib/awx/projects/Backups"
-    awx_username: '{{ lookup("env", "ANSIBLE_NET_USERNAME") }}'
-    awx_password: '{{ lookup("env", "ANSIBLE_NET_PASSWORD") }}'
-
-    cli:
-      host: "{{ inventory_hostname }}"
-      username: {{ awx_username }}
-      password: {{ awx_password }}
-      authorize: true
-
+    backup_dir: "/root/ANS/backup/network/cisco"
+    
   tasks:
-    - name: run show running-config on remote devices
+    - name: run show commands
       ios_command:
-        commands: "show running-config"
-        provider: "{{ cli }}"
-      register: config
+        commands:
+          - terminal length 0
+          - show running-config
+      register: show_result
+
+    - name: Debug registered var
+      debug: var=show_result.stdout_lines
 
     - name: Backup
       ansible.builtin.copy:
-        content: "{{ config.stdout }}"
-        dest: "{{ backup_dir }}/{{ inventory_hostname }}_config.{{ lookup('pipe', 'date +%Y-%m-%d@%H:%M:%S') }}"
-      when: export is defined
+        content: "{{ show_result.stdout|join('\n') }}"
+        dest: "{{ backup_dir }}/{{ inventory_hostname }}_config.{{ lookup('pipe', 'date +%Y-%m') }}"
+      when: show_result is defined
       delegate_to: localhost
