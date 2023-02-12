@@ -1,19 +1,21 @@
 ---
 
-- name: Run cisco backup
-  hosts: cisco
+- name: Run cdata backup
+  hosts: cdata_olts
   gather_facts: false
   connection: local
   vars:
-    backup_dir: "/root/ANS/backup/GoldenBackUps/network/cisco"
+    backup_dir: "/root/ANS/backup/GoldenBackUps/network/olts"
 
   tasks:
 
     - name: run show commands
       ios_command:
         commands:
-          - terminal length 0
-          - show running-config
+          - enable
+          - config
+          - vty output show-all
+          - show current-config
       register: show_result
 
     - name: Debug registered var

@@ -1,17 +1,18 @@
 ---
 
-- name: Run cisco backup
-  hosts: cisco
+- name: Run bdcom backup
+  hosts: bdcom_olts
   gather_facts: false
   connection: local
   vars:
-    backup_dir: "/root/ANS/backup/GoldenBackUps/network/cisco"
+    backup_dir: "/root/ANS/backup/GoldenBackUps/network/olts"
 
   tasks:
 
     - name: run show commands
       ios_command:
         commands:
+          - enable
           - terminal length 0
           - show running-config
       register: show_result
