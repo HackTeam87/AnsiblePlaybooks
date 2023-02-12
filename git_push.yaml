@@ -1,0 +1,30 @@
+---
+- name: Run script
+  hosts: localhost
+  gather_facts: no
+  vars:
+    setGit: 'git remote set-url origin https://<USERNAME>:<PASSWORD>@github.com/path/to/repo.git'
+  tasks:
+    - name: device_backup
+      shell: '{{item}}'
+      with_items:
+        - ansible-playbook -i inventory cisco.yaml
+        - ansible-playbook -i inventory cdata_olts.yaml
+        - ansible-playbook -i inventory bdcom_olts.yaml
+        - ansible-playbook -i inventory mikrotik.yaml
+      register: device
+
+    - name: device
+      debug: var=device.stdout_lines
+
+    - name: git_push
+      shell: |
+         git add -A && \
+         git commit -a -m "update" && \
+         git push --force
+      args:
+        chdir: /root/ANS/backup/GoldenBackUps
+      register: git_push
+
+    - name: show git_push
+      debug: var=git_push.stdout_lines
